@@ -23,7 +23,7 @@ Prerequisites
 -------------
 
 - Python 2.7 or Python 3.3+
-- [Tensorflow](https://www.tensorflow.org/)
+- [Tensorflow](https://www.tensorflow.org/) Tensorflow1.1 compatible
 - [SciPy](http://www.scipy.org/)
 
 
@@ -88,3 +88,4 @@ Author
 ------
 
 Taehoon Kim / [@carpedm20](http://carpedm20.github.io/)
+Modified by JA : Tesnorflow1.1 Compatible, Training Itereations to 4500.

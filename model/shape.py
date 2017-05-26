@@ -66,7 +66,7 @@ class ShapeAnalogy(Model):
     if self.model_type == "add":
       T = (f_b - f_a)
     elif self.model_type == "deep":
-      T_input = tf.concat(1, [f_b - f_a, f_c])
+      T_input = tf.concat([(f_b - f_a), f_c], 1)
 
       deep_w1 = tf.get_variable("deep_w1", [1024, 512])
       deep_w2 = tf.get_variable("deep_w2", [512, 256])
@@ -95,15 +95,15 @@ class ShapeAnalogy(Model):
     self.g1_img = tf.reshape(self.g1, [self.batch_size, self.image_size, self.image_size, 3])
     self.g2_img = tf.reshape(self.g2, [self.batch_size, self.image_size, self.image_size, 3])
     self.g3_img = tf.reshape(self.g3, [self.batch_size, self.image_size, self.image_size, 3])
-    _ = tf.image_summary("g", self.g1_img, max_images=5)
+    _ = tf.summary.image("g", self.g1_img)
 
     self.l = tf.nn.l2_loss(d - self.g1) / self.batch_size
-    _ = tf.scalar_summary("loss", self.l)
+    _ = tf.summary.scalar("loss", self.l)
 
     self.r = tf.nn.l2_loss(f_d - f_c - T) / self.batch_size
-    _ = tf.scalar_summary("regularizer", self.r)
+    _ = tf.summary.scalar("regularizer", self.r)
 
-  def train(self, max_iter=450000,
+  def train(self, max_iter=45000,
             alpha=0.01, learning_rate=0.001,
             checkpoint_dir="checkpoint"):
     """Train an Deep Visual Analogy network.
@@ -122,7 +122,7 @@ class ShapeAnalogy(Model):
     self.step = tf.Variable(0, trainable=False)
 
     self.loss = (self.l + self.alpha * self.r)
-    _ = tf.scalar_summary("l_plus_r", self.loss)
+    _ = tf.summary.scalar("l_plus_r", self.loss)
 
     self.lr = tf.train.exponential_decay(self.learning_rate,
                                          global_step=self.step,
@@ -135,8 +135,8 @@ class ShapeAnalogy(Model):
     #self.optim = tf.train.RMSPropOptimizer(self.lr, momentum=0.9, decay=0.95) \
     #                     .minimize(self.loss, global_step=self.step)
 
-    merged_sum = tf.merge_all_summaries()
-    writer = tf.train.SummaryWriter("./logs", self.sess.graph_def)
+    merged_sum = tf.summary.merge_all()
+    writer = tf.summary.FileWriter("./logs", self.sess.graph_def)
 
     tf.initialize_all_variables().run()
     self.load(self.checkpoint_dir)
@@ -147,7 +147,7 @@ class ShapeAnalogy(Model):
     test_a, test_b, test_c, test_d = self.loader.tests['rotate']
 
     for step in xrange(start_iter, start_iter + self.max_iter):
-      if step != 0 and step % 10000 == 0:
+      if step != 0 and step % 1000 == 0:
         self.test(fixed=True)
         self.save(checkpoint_dir, step)
 
